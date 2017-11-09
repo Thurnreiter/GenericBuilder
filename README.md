@@ -14,15 +14,15 @@ var
   Actual: TMyInterfaceImpl;
 begin
   Actual := TGenericBuilder<TMyInterfaceImpl>
-	.Builder
-	.WithProp('AnyName', 'Internal value for properties')
-	.WithProp('ThisIsAnInteger', 2810)
-	.WithProp(
-	  procedure(Instance: TMyInterfaceImpl)
-	  begin
-		Instance.ThisIsAnInteger := 2812
-	  end)
-	.Build;
+    .Builder
+    .WithProp('AnyName', 'Internal value for properties')
+    .WithProp('ThisIsAnInteger', 2810)
+    .WithProp(
+      procedure(Instance: TMyInterfaceImpl)
+      begin
+        Instance.ThisIsAnInteger := 2812
+      end)
+    .Build;
   Assert.AreEqual(2812, Actual.ThisIsAnInteger);
   Assert.AreEqual('Internal value for properties', Actual.AnyName);
   Actual.Free;
