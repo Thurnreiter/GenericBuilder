@@ -1,0 +1,36 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{414D85B3-69A9-41FC-87DF-BC90B2A38993}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Nathan.GenericBuilder\Nathan.GB.UnitTestX.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Nathan_GB_UnitTestX">
+        <MSBuild Projects="Nathan.GenericBuilder\Nathan.GB.UnitTestX.dproj"/>
+    </Target>
+    <Target Name="Nathan_GB_UnitTestX:Clean">
+        <MSBuild Projects="Nathan.GenericBuilder\Nathan.GB.UnitTestX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Nathan_GB_UnitTestX:Make">
+        <MSBuild Projects="Nathan.GenericBuilder\Nathan.GB.UnitTestX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Nathan_GB_UnitTestX"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Nathan_GB_UnitTestX:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Nathan_GB_UnitTestX:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
