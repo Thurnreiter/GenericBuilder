@@ -39,6 +39,9 @@ type
 
     [Test]
     procedure Test_HasDummyInterface_PropSet_WithObject();
+
+    [Test]
+    procedure Test_HasDummyObject_CreateWithAtgumentNil();
   end;
 
 implementation
@@ -144,7 +147,12 @@ begin
 end;
 
 procedure TMyTestObject.Test_HasDummyObject_PropSet_WithProp3;
+{$J+}
+const
+  C: Integer = 0;
 begin
+  Inc(C);
+  Inc(C);
   Assert.WillNotRaise(
     procedure
     var
@@ -164,6 +172,8 @@ begin
       Assert.AreEqual('Internal value for properties', Actual.AnyName);
       Actual.Free;
     end);
+  Inc(C);
+  Assert.AreEqual(3, C);
 end;
 
 procedure TMyTestObject.Test_HasCreatedInterfaceByBuild;
@@ -199,6 +209,21 @@ begin
   finally
     Stub.Free;
     Actual := nil;;
+  end;
+end;
+
+procedure TMyTestObject.Test_HasDummyObject_CreateWithAtgumentNil;
+var
+  Actual: TMyInterfaceImpl;
+begin
+  Actual := TGenericBuilder<TMyInterfaceImpl>
+    .Builder
+    .Build(['Internal value for properties']);
+  try
+    Assert.IsNotNull(Actual);
+    Assert.AreEqual('Internal value for properties', Actual.AnyName);
+  finally
+    Actual.Free;
   end;
 end;
 

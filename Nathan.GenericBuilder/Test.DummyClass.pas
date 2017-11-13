@@ -49,6 +49,8 @@ type
     function GetAnyAddionalObject(): TObject;
     procedure SetAnyAddionalObject(Value: TObject);
   public
+    constructor Create(const AAnyName: string); overload;
+
     procedure SomePublicProcedureWithString(const Value: string);
     function SomePublicFunction(Value: Integer): Boolean;
   published
@@ -66,6 +68,12 @@ uses
   System.SysUtils;
 
 { TMyInterfaceImpl }
+
+constructor TMyInterfaceImpl.Create(const AAnyName: string);
+begin
+  inherited Create;
+  FInternal := AAnyName;
+end;
 
 function TMyInterfaceImpl.GetAnyAddionalObject: TObject;
 begin
