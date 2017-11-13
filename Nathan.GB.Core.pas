@@ -25,6 +25,11 @@ type
   ///       .WithProp('AnyName', 'Internal value for properties')
   ///       .WithProp('ThisIsAnInteger', 2810)
   ///       .WithProp('AnyAddionalObject', Stub)
+  ///       .WithProp(
+  ///         procedure(Instance: TMyInterfaceImpl)
+  ///         begin
+  ///           Instance.ThisIsAnInteger := 2812
+  ///         end)
   ///       .Build;
   /// </summary>
   //  TGenericBuilder<T: class, constructor> = record
@@ -34,14 +39,15 @@ type
     FList: TList<TProc<T>>;
 
     procedure SetProperties(Element: T);
-    function CreateInstance(): T;
+    function CreateInstance(const Args: array of TValue): T;
   public
     /// <summary>
     ///   Only used to initialize the internal TDictionary list.
     /// </summary>
-
-    class function Builder(): TGenericBuilder<T>; static;  // .GetInstance, .New, .Builder
-
+    /// <returns>
+    ///   The Builder self, after initialization.
+    /// </returns>
+    class function Builder(): TGenericBuilder<T>; static;  // .GetInstance, .New, .Builder all the same
 
     /// <summary>
     ///   Property filler. Example: .WithProp('AnyPropName', 'Internal string value for properties')
@@ -52,24 +58,46 @@ type
     /// <param name="APropValue">
     ///   The value for property. Can accept any value corresponding to TValue.
     /// </param>
+    /// <returns>
+    ///   The Builder self, for the next property.
+    /// </returns>
+
     function WithProp(const APropName: string; APropValue: TValue): TGenericBuilder<T>; overload;
 
     /// <summary>
     ///   Property filler Action<T>.
     /// </summary>
+    /// <returns>
+    ///   The Builder self, for the next property.
+    /// </returns>
 
     function WithProp(Action: TProc<T>): TGenericBuilder<T>; overload;
 
     /// <summary>
     ///   Create an fill the corresponding object.
     /// </summary>
+    /// <returns>
+    ///   The generic class.
+    /// </returns>
+    function Build(): T; overload;
 
-    function Build(): T;
+    /// <summary>
+    ///   Create an fill the corresponding object.
+    /// </summary>
+    /// <param name="Args">
+    ///   They are arguments for the constructor, will have one.
+    /// </param>
+    /// <returns>
+    ///   The generic class.
+    /// </returns>
+    function Build(const Args: array of TValue): T; overload;
   end;
 
 {$M-}
 
 implementation
+
+//operator +(const a,b:Vector)c:Vector;
 
 { **************************************************************************** }
 
@@ -99,10 +127,15 @@ begin
 end;
 
 function TGenericBuilder<T>.Build: T;
+begin
+  Result := Self.Build([]);
+end;
+
+function TGenericBuilder<T>.Build(const Args: array of TValue): T;
 var
   Action: TProc<T>;
 begin
-  Result := CreateInstance;
+  Result := CreateInstance(Args);
 
   if Assigned(FMapVal) then
     SetProperties(Result);
@@ -124,7 +157,7 @@ begin
   //  xInValue := GetTypeData(PTypeInfo(TypeInfo(T)))^.ClassType.Create;
   //  xInValue.TryCast(TypeInfo(T), xOutValue);
   //  Result := xOutValue.AsType<T>;
-  //  
+  //
   //  v: TValue;
   //  v := TValue.From<T>(Result);
   //  if v.IsObject or v.IsObjectInstance then
@@ -165,7 +198,7 @@ begin
   end;
 end;
 
-function TGenericBuilder<T>.CreateInstance(): T;
+function TGenericBuilder<T>.CreateInstance(const Args: array of TValue): T;
 var
   AValue: TValue;
   RCtx: TRttiContext;
@@ -178,10 +211,11 @@ begin
   for AMethCreate in RType.GetMethods do
   begin
     if (AMethCreate.IsConstructor)
-    and (Length(AMethCreate.GetParameters) = 0) then
+//    and (Length(AMethCreate.GetParameters) = 0) then
+    and (Length(AMethCreate.GetParameters) = Length(Args)) then
     begin
       AInstanceType := RType.AsInstance;
-      AValue := AMethCreate.Invoke(AInstanceType.MetaclassType, []);  //  constructor parameters, here are emtpy []...
+      AValue := AMethCreate.Invoke(AInstanceType.MetaclassType, Args);  //  constructor parameters, here are emtpy []...
       Exit(AValue.AsType<T>);
     end;
   end;
