@@ -2,6 +2,9 @@ unit Test.DummyClass;
 
 interface
 
+uses
+  System.JSON.Serializers;
+
 {$M+}
 
 //{$RTTI EXPLICIT METHODS([vcPublic, vcProtected, vcPrivate, vcPublished])}
@@ -31,10 +34,18 @@ type
     property ThisIsAnInteger: Integer read GetThisIsAnInteger write SetThisIsAnInteger;
   end;
 
+//  [JsonSerialize(TJsonMemberSerialization.&Public)] //  Serialize all public fields and properties from my and inherited classes ...
+//  [JsonSerialize(TJsonMemberSerialization.&In)] //  Just only fields with attribute JsonIn...
+  [JsonSerialize(TJsonMemberSerialization.Fields)]
   TMyInterfaceImpl = class(TInterfacedObject, IMyInterface)
   strict private
+    [JsonName('Internal')]
     FInternal: string;
+
+    [JsonName('InternalInt')]
     FInternalInt: Integer;
+
+    [JsonName('InternalObj')]
     FInternalObj: TObject;
   private
     function GetAnyName(): string;
