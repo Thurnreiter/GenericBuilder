@@ -37,10 +37,14 @@ type
   private
     FMapVal: TDictionary<string, TValue>;
     FList: TList<TProc<T>>;
+    FJsonValue: string;
 
     procedure SetProperties(Element: T);
     function CreateInstance(const Args: array of TValue): T;
+    function CreateInstanceOverJson(): T;
   public
+    class operator Implicit(AJsonValue: string): TGenericBuilder<T>;
+
     /// <summary>
     ///   Only used to initialize the internal TDictionary list.
     /// </summary>
@@ -61,7 +65,6 @@ type
     /// <returns>
     ///   The Builder self, for the next property.
     /// </returns>
-
     function WithProp(const APropName: string; APropValue: TValue): TGenericBuilder<T>; overload;
 
     /// <summary>
@@ -70,7 +73,6 @@ type
     /// <returns>
     ///   The Builder self, for the next property.
     /// </returns>
-
     function WithProp(Action: TProc<T>): TGenericBuilder<T>; overload;
 
     /// <summary>
@@ -97,11 +99,19 @@ type
 
 implementation
 
-//operator +(const a,b:Vector)c:Vector;
+uses
+  System.JSON.Types,
+  System.JSON.Serializers;
 
 { **************************************************************************** }
 
 { TGenericBuilder<T> }
+
+class operator TGenericBuilder<T>.Implicit(AJsonValue: string): TGenericBuilder<T>;
+begin
+  Result := Default(TGenericBuilder<T>);  //  Init my TDictionary
+  Result.FJsonValue := AJsonValue;
+end;
 
 class function TGenericBuilder<T>.Builder(): TGenericBuilder<T>;
 begin
@@ -206,6 +216,9 @@ var
   AMethCreate: TRttiMethod;
   AInstanceType: TRttiInstanceType;
 begin
+  if (not FJsonValue.IsEmpty) then
+    Exit(CreateInstanceOverJson);
+
   RCtx := TRttiContext.Create;
   RType := RCtx.GetType(TypeInfo(T));
   for AMethCreate in RType.GetMethods do
@@ -219,6 +232,21 @@ begin
       Exit(AValue.AsType<T>);
     end;
   end;
+end;
+
+function TGenericBuilder<T>.CreateInstanceOverJson(): T;
+var
+  Serializer: TJsonSerializer;
+begin
+  Serializer := TJsonSerializer.Create;
+  try
+    //  Serializer.Formatting := TJsonFormatting.Indented;  //  Line Breaks...
+    Serializer.DateFormatHandling := TJsonDateFormatHandling.Iso;
+    Result := Serializer.Deserialize<T>(FJsonValue); // json := Serializer.Serialize(Self);
+  finally
+    Serializer.Free;
+  end;
+
 end;
 
 end.
