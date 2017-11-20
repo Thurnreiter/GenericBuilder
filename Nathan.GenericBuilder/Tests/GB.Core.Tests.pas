@@ -42,11 +42,20 @@ type
 
     [Test]
     procedure Test_HasDummyObject_CreateWithAtgumentNil();
+
+    [Test]
+    procedure Test_HasDummyObject_OverClassOperator_WithJson();
+
+    [Test]
+    procedure Test_HasDummyObject_OverClassOperator_WithJson_Direct();
   end;
 
 implementation
 
 uses
+//REST.JSON,
+//System.JSON,
+//System.JSON.Serializers,
   Nathan.GB.Core,
   Test.DummyClass;
 
@@ -222,6 +231,43 @@ begin
   try
     Assert.IsNotNull(Actual);
     Assert.AreEqual('Internal value for properties', Actual.AnyName);
+  finally
+    Actual.Free;
+  end;
+end;
+
+procedure TMyTestObject.Test_HasDummyObject_OverClassOperator_WithJson;
+var
+  Cut: TGenericBuilder<TMyInterfaceImpl>;
+  Actual: TMyInterfaceImpl;
+begin
+  // '{"internal":"Internal value for properties","internalInt":2810,"internalObj":null}'
+  //    my := TJson.ObjectToJsonString(Actual);
+  //    Actual := TJson.JsonToObject<TMyInterfaceImpl>('{"internal":"Internal value for properties","internalInt":2810,"internalObj":null}');
+
+  //  Cut := '{"FInternal":"Internal value for properties","FInternalInt":2811,"FInternalObj":null,"FRefCount":0}';
+  Cut := '{"Internal":"Internal value for properties","InternalInt":2811,"InternalObj":null}';
+  Actual := Cut.Build;
+  try
+    Assert.IsNotNull(Actual);
+    Assert.AreEqual(2811, Actual.ThisIsAnInteger);
+    Assert.AreEqual('Internal value for properties', Actual.AnyName);
+    Assert.IsNull(Actual.AnyAddionalObject);
+  finally
+    Actual.Free;
+  end;
+end;
+
+procedure TMyTestObject.Test_HasDummyObject_OverClassOperator_WithJson_Direct;
+var
+  Actual: TMyInterfaceImpl;
+begin
+  Actual := TGenericBuilder<TMyInterfaceImpl>('{"Internal":"Internal value for properties","InternalInt":2811,"InternalObj":null}').Build;
+  try
+    Assert.IsNotNull(Actual);
+    Assert.AreEqual(2811, Actual.ThisIsAnInteger);
+    Assert.AreEqual('Internal value for properties', Actual.AnyName);
+    Assert.IsNull(Actual.AnyAddionalObject);
   finally
     Actual.Free;
   end;
