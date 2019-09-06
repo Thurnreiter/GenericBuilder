@@ -26,6 +26,8 @@ begin
   TestInsight.DUnitX.RunRegisteredTests;
   exit;
 {$ENDIF}
+
+  //  Any sample for git
   try
     //Check command line options, will exit if invalid
     TDUnitX.CheckCommandLine;
